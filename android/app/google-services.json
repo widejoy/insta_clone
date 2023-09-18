@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "290974832827",
+    "project_id": "inta-clone-85e79",
+    "storage_bucket": "inta-clone-85e79.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290974832827:android:8f0d4af3adc32771aa719e",
+        "android_client_info": {
+          "package_name": "com.example.insta_clone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPWCkUVQmTSTY28gnnz3-J0FCmP73WxZM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
