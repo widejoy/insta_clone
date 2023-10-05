@@ -30,6 +30,7 @@ class InstagramPost extends StatefulWidget {
 class _InstagramPostState extends State<InstagramPost> {
   bool isPlaying = true;
   bool isVideoHold = false;
+  bool isLoading = true;
 
   late VideoPlayerController _controller;
   bool videoEnded = false;
@@ -39,6 +40,10 @@ class _InstagramPostState extends State<InstagramPost> {
   void initState() {
     super.initState();
     _initializeVideoPlayerFuture = _initializeVideoPlayer();
+    _controller = VideoPlayerController.networkUrl(widget.videoPath as Uri)
+      ..initialize().then((_) {
+        _controller.pause();
+      });
   }
 
   @override
@@ -119,6 +124,7 @@ class _InstagramPostState extends State<InstagramPost> {
                 future: _initializeVideoPlayerFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
+                    isLoading = false;
                     return AspectRatio(
                       aspectRatio: _controller.value.aspectRatio,
                       child: GestureDetector(
@@ -128,12 +134,45 @@ class _InstagramPostState extends State<InstagramPost> {
                         onLongPressEnd: (_) {
                           _onVideoHold(false);
                         },
-                        child: VideoPlayer(_controller),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            VideoPlayer(_controller),
+                            if (isLoading)
+                              CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Theme.of(context).primaryColor,
+                                ),
+                              ),
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              child: VideoProgressIndicator(
+                                _controller,
+                                allowScrubbing: true,
+                                colors: const VideoProgressColors(
+                                  playedColor:
+                                      Color.fromARGB(255, 255, 255, 255),
+                                  backgroundColor: Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
-                  } else {
+                  } else if (snapshot.hasError) {
                     return const Center(
-                      child: CircularProgressIndicator(),
+                      child: Text('Error loading video'),
+                    );
+                  } else {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).primaryColor,
+                        ),
+                      ),
                     );
                   }
                 },

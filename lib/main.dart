@@ -17,9 +17,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        body: const Timeline(),
-        appBar: AppBar(),
+      home: const Scaffold(
+        body: Timeline(),
       ),
       darkTheme: ThemeData.dark(),
     );

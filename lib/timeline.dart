@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:insta_clone/Widgets/instapost.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:insta_clone/addpage.dart';
+import 'package:video_player/video_player.dart';
 
 class Timeline extends StatefulWidget {
   const Timeline({super.key});
@@ -10,9 +13,30 @@ class Timeline extends StatefulWidget {
 }
 
 class _TimelineState extends State<Timeline> {
+  late PlatformFile file;
+  VideoPlayerController? _currentVideoController;
+
+  @override
+  void dispose() {
+    _currentVideoController?.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const AddPage(),
+              ),
+            );
+          },
+          icon: const Icon(Icons.add),
+        ),
+      ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance.collection('posts').snapshots(),
         builder: (context, snapshot) {
@@ -39,13 +63,27 @@ class _TimelineState extends State<Timeline> {
               var loc = data['location'] ?? '';
               var video = data['videoname'] ?? '';
 
-              return InstagramPost(
-                caption: caption,
-                comments: comments,
-                likes: likes,
-                loc: loc,
-                username: username,
-                videoPath: video,
+              return GestureDetector(
+                onTap: () {
+                  if (_currentVideoController != null) {
+                    _currentVideoController!.pause();
+                  }
+                  setState(() {
+                    _currentVideoController =
+                        VideoPlayerController.networkUrl(video)
+                          ..initialize().then((_) {
+                            _currentVideoController!.play();
+                          });
+                  });
+                },
+                child: InstagramPost(
+                  caption: caption,
+                  comments: comments,
+                  likes: likes,
+                  loc: loc,
+                  username: username,
+                  videoPath: video,
+                ),
               );
             },
           );
