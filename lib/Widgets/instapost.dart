@@ -40,10 +40,6 @@ class _InstagramPostState extends State<InstagramPost> {
   void initState() {
     super.initState();
     _initializeVideoPlayerFuture = _initializeVideoPlayer();
-    _controller = VideoPlayerController.networkUrl(widget.videoPath as Uri)
-      ..initialize().then((_) {
-        _controller.pause();
-      });
   }
 
   @override

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:insta_clone/Widgets/instapost.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:insta_clone/addpage.dart';
-import 'package:video_player/video_player.dart';
 
 class Timeline extends StatefulWidget {
   const Timeline({super.key});
@@ -14,11 +13,9 @@ class Timeline extends StatefulWidget {
 
 class _TimelineState extends State<Timeline> {
   late PlatformFile file;
-  VideoPlayerController? _currentVideoController;
 
   @override
   void dispose() {
-    _currentVideoController?.dispose();
     super.dispose();
   }
 
@@ -63,27 +60,13 @@ class _TimelineState extends State<Timeline> {
               var loc = data['location'] ?? '';
               var video = data['videoname'] ?? '';
 
-              return GestureDetector(
-                onTap: () {
-                  if (_currentVideoController != null) {
-                    _currentVideoController!.pause();
-                  }
-                  setState(() {
-                    _currentVideoController =
-                        VideoPlayerController.networkUrl(video)
-                          ..initialize().then((_) {
-                            _currentVideoController!.play();
-                          });
-                  });
-                },
-                child: InstagramPost(
-                  caption: caption,
-                  comments: comments,
-                  likes: likes,
-                  loc: loc,
-                  username: username,
-                  videoPath: video,
-                ),
+              return InstagramPost(
+                caption: caption,
+                comments: comments,
+                likes: likes,
+                loc: loc,
+                username: username,
+                videoPath: video,
               );
             },
           );
