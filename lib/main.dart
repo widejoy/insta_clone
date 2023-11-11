@@ -6,6 +6,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
+  debugProfileBuildsEnabled = true;
+
   runApp(
     const MyApp(),
   );

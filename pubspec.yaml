@@ -41,6 +41,7 @@ dependencies:
   path_provider:
   file_picker: ^5.5.0
   chewie: ^1.7.1
+  visibility_detector: ^0.4.0+2
 
 dev_dependencies:
   flutter_test:

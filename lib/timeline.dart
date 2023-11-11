@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:insta_clone/Widgets/instapost.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:insta_clone/addpage.dart';
 
 class Timeline extends StatefulWidget {
-  const Timeline({super.key});
+  const Timeline({Key? key}) : super(key: key);
 
   @override
   State<Timeline> createState() => _TimelineState();
@@ -41,7 +41,20 @@ class _TimelineState extends State<Timeline> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return const Center(child: Text('Error loading data'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Error loading data'),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {}); // Refresh the widget on error
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(child: Text('No data available'));

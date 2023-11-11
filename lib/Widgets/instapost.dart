@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class InstagramPost extends StatefulWidget {
   const InstagramPost({
@@ -28,13 +29,11 @@ class InstagramPost extends StatefulWidget {
 }
 
 class _InstagramPostState extends State<InstagramPost> {
+  late VideoPlayerController _controller;
+  late Future<void> _initializeVideoPlayerFuture;
   bool isPlaying = true;
   bool isVideoHold = false;
   bool isLoading = true;
-
-  late VideoPlayerController _controller;
-  bool videoEnded = false;
-  late Future<void> _initializeVideoPlayerFuture;
 
   @override
   void initState() {
@@ -44,6 +43,7 @@ class _InstagramPostState extends State<InstagramPost> {
 
   @override
   void dispose() {
+    _controller.pause();
     _controller.dispose();
     super.dispose();
   }
@@ -61,22 +61,25 @@ class _InstagramPostState extends State<InstagramPost> {
       await storageRef.writeToFile(videoFile);
     }
 
-    _controller = VideoPlayerController.file(videoFile)
-      ..initialize().then((_) {
-        setState(() {});
-      });
+    _controller = VideoPlayerController.file(videoFile);
 
-    _controller.addListener(
-      () {
-        if (!isVideoHold) {
-          if (isPlaying) {
-            _controller.play();
-          } else {
-            _controller.pause();
-          }
+    try {
+      await _controller.initialize();
+      setState(() {});
+    } catch (error) {
+      print('Error initializing video player: $error');
+      // Handle error appropriately
+    }
+
+    _controller.addListener(() {
+      if (!isVideoHold) {
+        if (isPlaying) {
+          _controller.play();
+        } else {
+          _controller.pause();
         }
-      },
-    );
+      }
+    });
   }
 
   void _onVideoHold(bool isHolding) {
@@ -91,6 +94,60 @@ class _InstagramPostState extends State<InstagramPost> {
     } else {
       _controller.pause();
     }
+  }
+
+  Widget _buildVideoPlayer() {
+    return VisibilityDetector(
+      key: Key(widget.videoPath), // Provide a unique key
+      onVisibilityChanged: (visibilityInfo) {
+        if (visibilityInfo.visibleFraction == 0) {
+          // Widget is off-screen, dispose the controller
+          _controller.pause();
+          _controller.dispose();
+        } else if (_controller.value.isInitialized) {
+          // Widget is on-screen and controller is initialized, play the video
+          if (!isVideoHold && isPlaying) {
+            _controller.play();
+          }
+        }
+      },
+      child: AspectRatio(
+        aspectRatio: _controller.value.aspectRatio,
+        child: GestureDetector(
+          onLongPressStart: (_) {
+            _onVideoHold(true);
+          },
+          onLongPressEnd: (_) {
+            _onVideoHold(false);
+          },
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              VideoPlayer(_controller),
+              if (isLoading)
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).primaryColor,
+                  ),
+                ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: VideoProgressIndicator(
+                  _controller,
+                  allowScrubbing: true,
+                  colors: const VideoProgressColors(
+                    playedColor: Color.fromARGB(255, 255, 255, 255),
+                    backgroundColor: Colors.grey,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -121,43 +178,7 @@ class _InstagramPostState extends State<InstagramPost> {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     isLoading = false;
-                    return AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      child: GestureDetector(
-                        onLongPressStart: (_) {
-                          _onVideoHold(true);
-                        },
-                        onLongPressEnd: (_) {
-                          _onVideoHold(false);
-                        },
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            VideoPlayer(_controller),
-                            if (isLoading)
-                              CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Theme.of(context).primaryColor,
-                                ),
-                              ),
-                            Positioned(
-                              left: 0,
-                              right: 0,
-                              bottom: 0,
-                              child: VideoProgressIndicator(
-                                _controller,
-                                allowScrubbing: true,
-                                colors: const VideoProgressColors(
-                                  playedColor:
-                                      Color.fromARGB(255, 255, 255, 255),
-                                  backgroundColor: Colors.grey,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
+                    return _buildVideoPlayer();
                   } else if (snapshot.hasError) {
                     return const Center(
                       child: Text('Error loading video'),
