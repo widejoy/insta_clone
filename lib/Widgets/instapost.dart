@@ -5,6 +5,7 @@ import 'package:video_player/video_player.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class InstagramPost extends StatefulWidget {
   const InstagramPost({
@@ -68,7 +69,6 @@ class _InstagramPostState extends State<InstagramPost> {
       setState(() {});
     } catch (error) {
       print('Error initializing video player: $error');
-      // Handle error appropriately
     }
 
     _controller.addListener(() {
@@ -150,9 +150,19 @@ class _InstagramPostState extends State<InstagramPost> {
     );
   }
 
+  Widget _buildUserAvatar() {
+    return CachedNetworkImage(
+      imageUrl:
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Outdoors-man-portrait_%28cropped%29.jpg/1200px-Outdoors-man-portrait_%28cropped%29.jpg',
+      placeholder: (context, url) => const CircleAvatar(),
+      errorWidget: (context, url, error) => const CircleAvatar(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 100),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Card(
@@ -161,11 +171,7 @@ class _InstagramPostState extends State<InstagramPost> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ListTile(
-                leading: const CircleAvatar(
-                  backgroundImage: NetworkImage(
-                    'https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Outdoors-man-portrait_%28cropped%29.jpg/1200px-Outdoors-man-portrait_%28cropped%29.jpg',
-                  ),
-                ),
+                leading: _buildUserAvatar(),
                 title: Text(widget.username),
                 subtitle: Text(widget.loc),
                 trailing: IconButton(
@@ -196,40 +202,42 @@ class _InstagramPostState extends State<InstagramPost> {
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.favorite_border),
-                          onPressed: () {},
-                        ),
-                        const SizedBox(width: 8.0),
-                        const Text('Like'),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.comment_outlined),
-                          onPressed: () {},
-                        ),
-                        const SizedBox(width: 8.0),
-                        const Text('Comment'),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.send),
-                          onPressed: () {},
-                        ),
-                        const SizedBox(width: 8.0),
-                        const Text('Send'),
-                      ],
-                    ),
-                  ],
+                child: Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.favorite_border),
+                            onPressed: () {},
+                          ),
+                          const SizedBox(width: 8.0),
+                          const Text('Like'),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.comment_outlined),
+                            onPressed: () {},
+                          ),
+                          const SizedBox(width: 8.0),
+                          const Text('Comment'),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.send),
+                            onPressed: () {},
+                          ),
+                          const SizedBox(width: 8.0),
+                          const Text('Send'),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
               Padding(
